@@ -1,90 +1,142 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { Package, BarChart3, ShoppingCart, TrendingUp, ArrowRight } from 'lucide-react'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
+import Swal from 'sweetalert2'
+import { Eye, EyeOff, Lock, LogIn, Mail } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+import type { ApiError } from '../lib/api/types'
 
-export const Route = createFileRoute('/')({ component: HomePage })
+export const Route = createFileRoute('/')({ component: LoginPage })
 
-function HomePage() {
-  const features = [
-    {
-      icon: <Package className="w-12 h-12 text-cyan-400" />,
-      title: 'Inventory Management',
-      description: 'Track and manage your inventory with ease. Real-time updates and comprehensive reporting.',
-    },
-    {
-      icon: <BarChart3 className="w-12 h-12 text-cyan-400" />,
-      title: 'Analytics & Insights',
-      description: 'Get detailed insights into your inventory trends, sales patterns, and stock levels.',
-    },
-    {
-      icon: <ShoppingCart className="w-12 h-12 text-cyan-400" />,
-      title: 'Order Processing',
-      description: 'Streamline your order management with automated workflows and tracking.',
-    },
-    {
-      icon: <TrendingUp className="w-12 h-12 text-cyan-400" />,
-      title: 'Sales Tracking',
-      description: 'Monitor sales performance and identify growth opportunities in real-time.',
-    },
-  ]
+function LoginPage() {
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      await login(email, password)
+      await Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Login successful! Redirecting to inventory...',
+        timer: 1500,
+        showConfirmButton: false
+      })
+      navigate({ to: '/inventory' })
+    } catch (err) {
+      const apiError = err as ApiError
+      await Swal.fire({
+        icon: 'error',
+        title: 'Login Failed',
+        text: apiError.message || 'Failed to login. Please check your credentials.',
+        confirmButtonColor: '#3B82F6'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 py-20">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-            Welcome to <span className="text-cyan-400">Venus Inventory</span>
-          </h1>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Streamline your inventory management with our powerful and intuitive platform.
-            Track stock, manage orders, and grow your business effortlessly.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              to="/signup"
-              className="inline-flex items-center px-8 py-4 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition duration-200 transform hover:scale-105 shadow-lg"
-            >
-              Get Started
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
-            <Link
-              to="/login"
-              className="inline-flex items-center px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition duration-200 border border-gray-600"
-            >
-              Sign In
-            </Link>
-          </div>
-        </div>
-
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mt-20">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-gray-800 p-6 rounded-xl border border-gray-700 hover:border-cyan-500 transition duration-300 transform hover:scale-105"
-            >
-              <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-              <p className="text-gray-400">{feature.description}</p>
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="rounded-2xl shadow-2xl p-8 border border-blue-200">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-4">
+              <LogIn className="w-8 h-8 text-white" />
             </div>
-          ))}
-        </div>
+            <h1 className="text-3xl font-bold text-black mb-2">Welcome Back</h1>
+            <p className="text-gray-700">Sign in to Venus Inventory</p>
+          </div>
 
-        {/* CTA Section */}
-        <div className="mt-20 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to transform your inventory management?
-          </h2>
-          <p className="text-xl text-cyan-50 mb-8">
-            Join thousands of businesses already using Venus Inventory
-          </p>
-          <Link
-            to="/signup"
-            className="inline-flex items-center px-8 py-4 bg-white text-cyan-600 font-semibold rounded-lg hover:bg-gray-100 transition duration-200 transform hover:scale-105 shadow-lg"
-          >
-            Start Your Free Trial
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Link>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-black mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-600" />
+                </div>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-black mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-600" />
+                </div>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 hover:text-gray-800 transition"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember"
+                  type="checkbox"
+                  className="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded bg-white"
+                />
+                <label htmlFor="remember" className="ml-2 block text-sm text-black">
+                  Remember me
+                </label>
+              </div>
+             
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-[#C6E7FF] hover:bg-[#B0D9FF] text-black font-semibold py-3 px-4 rounded-lg transition duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {isLoading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-700">
+              Don't have an account?{' '}
+              <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-semibold transition">
+                Sign up
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

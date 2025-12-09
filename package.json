@@ -23,6 +23,7 @@
     "nitro": "latest",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "sweetalert2": "^11.26.4",
     "tailwindcss": "^4.0.6",
     "vite-tsconfig-paths": "^5.1.4"
   },

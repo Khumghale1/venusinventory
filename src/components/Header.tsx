@@ -1,9 +1,18 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Home, Menu, X, LogIn, UserPlus, Package } from 'lucide-react'
+import { Home, LogOut, Menu, Package, UserPlus, X } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Header() {
+  const { isAuthenticated, user, logout } = useAuth()
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
+
+  const handleLogout = () => {
+    logout()
+    setIsOpen(false)
+    navigate({ to: '/' })
+  }
 
   return (
     <>
@@ -23,18 +32,27 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            to="/login"
-            className="px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            Sign In
-          </Link>
-          <Link
-            to="/signup"
-            className="px-4 py-2 text-sm font-medium bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
-          >
-            Sign Up
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <span className="text-sm text-gray-300 hidden sm:inline">
+                {user?.email}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/signup"
+              className="px-4 py-2 text-sm font-medium bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
+            >
+              Sign Up
+            </Link>
+          )}
         </div>
       </header>
 
@@ -71,18 +89,7 @@ export default function Header() {
             <span className="font-medium">Home</span>
           </Link>
 
-          <Link
-            to="/login"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <LogIn size={20} />
-            <span className="font-medium">Sign In</span>
-          </Link>
+        
 
           <Link
             to="/signup"
